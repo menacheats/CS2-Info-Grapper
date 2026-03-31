@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CS2 Advanced Info Grabber</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+      color: #e0e0e0;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding: 20px 0;
+      border-bottom: 2px solid #00d4ff;
+    }
+
+    h1 {
+      font-size: 2.5em;
+      color: #00d4ff;
+      margin-bottom: 10px;
+      text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+    }
+
+    .search-box {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+      justify-content: center;
+    }
+
+    input {
+      padding: 12px 20px;
+      border: 2px solid #00d4ff;
+      background: #0f3460;
+      color: #e0e0e0;
+      border-radius: 5px;
+      font-size: 1em;
+      width: 100%;
+      max-width: 500px;
+    }
+
+    input::placeholder {
+      color: #888;
+    }
+
+    button {
+      padding: 12px 30px;
+      background: #00d4ff;
+      color: #1a1a2e;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1em;
+      transition: all 0.3s;
+    }
+
+    button:hover {
+      background: #00a8cc;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0, 212, 255, 0.3);
+    }
+
+    .player-card {
+      background: #0f3460;
+      border: 2px solid #00d4ff;
+      border-radius: 10px;
+      padding: 30px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .player-card.active {
+      display: block;
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .player-header {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 30px;
+      align-items: center;
+      border-bottom: 2px solid #1a2a4e;
+      padding-bottom: 20px;
+    }
+
+    .player-avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 10px;
+      border: 2px solid #00d4ff;
+      object-fit: cover;
+    }
+
+    .player-info {
+      flex: 1;
+    }
+
+    .player-name {
+      font-size: 1.8em;
+      color: #00d4ff;
+      margin-bottom: 10px;
+    }
+
+    .player-id {
+      color: #888;
+      font-size: 0.9em;
+      margin-bottom: 10px;
+    }
+
+    .risk-indicator {
+      display: inline-block;
+      padding: 8px 16px;
+      border-radius: 5px;
+      font-weight: bold;
+      font-size: 1.1em;
+      margin-top: 10px;
+    }
+
+    .risk-very-high {
+      background: #ff4444;
+      color: white;
+    }
+
+    .risk-high {
+      background: #ff8800;
+      color: white;
+    }
+
+    .risk-medium {
+      background: #ffbb00;
+      color: #1a1a2e;
+    }
+
+    .risk-low-medium {
+      background: #88dd00;
+      color: #1a1a2e;
+    }
+
+    .risk-low {
+      background: #00dd88;
+      color: #1a1a2e;
+    }
+
+    .risk-safe {
+      background: #00dd88;
+      color: #1a1a2e;
+    }
+
+    .risk-critical {
+      background: #ff0000;
+      color: white;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #1a2a4e;
+      flex-wrap: wrap;
+    }
+
+    .tab-button {
+      padding: 10px 20px;
+      background: #1a2a4e;
+      color: #00d4ff;
+      border: none;
+      border-radius: 5px 5px 0 0;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+
+    .tab-button.active {
+      background: #00d4ff;
+      color: #1a1a2e;
+    }
+
+    .tab-button:hover {
+      background: #2a3a5e;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .stat-box {
+      background: #1a2a4e;
+      border: 1px solid #00d4ff;
+      border-radius: 8px;
+      padding: 15px;
+      text-align: center;
+    }
+
+    .stat-label {
+      color: #888;
+      font-size: 0.9em;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 1.8em;
+      color: #00d4ff;
+      font-weight: bold;
+    }
+
+    .stat-status {
+      font-size: 0.85em;
+      margin-top: 5px;
+      padding: 5px;
+      border-radius: 3px;
+    }
+
+    .status-clean {
+      background: #00dd88;
+      color: #1a1a2e;
+    }
+
+    .status-banned {
+      background: #ff4444;
+      color: white;
+    }
+
+    .status-warning {
+      background: #ffbb00;
+      color: #1a1a2e;
+    }
+
+    .status-hidden {
+      background: #888;
+      color: white;
+    }
+
+    .risk-score {
+      width: 100%;
+      height: 30px;
+      background: #1a2a4e;
+      border: 1px solid #00d4ff;
+      border-radius: 15px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .risk-score-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #00dd88, #ffbb00, #ff8800, #ff4444);
+      width: 0%;
+      transition: width 0.5s ease-out;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 0.8em;
+    }
+
+    .section {
+      background: #1a2a4e;
+      border: 1px solid #00d4ff;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+
+    .section-title {
+      color: #00d4ff;
+      font-weight: bold;
+      margin-bottom: 10px;
+      font-size: 1.1em;
+    }
+
+    .flags {
+      background: #1a2a4e;
+      border: 1px solid #ff4444;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+
+    .flags-title {
+      color: #ff4444;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    .flag-item {
+      background: #0f3460;
+      padding: 8px 12px;
+      margin: 5px 0;
+      border-left: 3px solid #ff4444;
+      border-radius: 3px;
+    }
+
+    .recommendation {
+      background: #0f3460;
+      padding: 12px;
+      margin: 8px 0;
+      border-left: 4px solid;
+      border-radius: 3px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .recommendation.CRITICAL {
+      border-left-color: #ff0000;
+      background: rgba(255, 0, 0, 0.1);
+    }
+
+    .recommendation.HIGH {
+      border-left-color: #ff8800;
+      background: rgba(255, 136, 0, 0.1);
+    }
+
+    .recommendation.MEDIUM {
+      border-left-color: #ffbb00;
+      background: rgba(255, 187, 0, 0.1);
+    }
+
+    .recommendation.LOW {
+      border-left-color: #00d4ff;
+      background: rgba(0, 212, 255, 0.1);
+    }
+
+    .rec-type {
+      font-weight: bold;
+      padding: 4px 8px;
+      border-radius: 3px;
+      font-size: 0.85em;
+    }
+
+    .rec-type.AVOID {
+      background: #ff4444;
+      color: white;
+    }
+
+    .rec-type.CAUTION {
+      background: #ff8800;
+      color: white;
+    }
+
+    .rec-type.INFO {
+      background: #00d4ff;
+      color: #1a1a2e;
+    }
+
+    .rec-type.SAFE {
+      background: #00dd88;
+      color: #1a1a2e;
+    }
+
+    .banned-games {
+      background: #1a2a4e;
+      border: 1px solid #ff8800;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+
+    .game-item {
+      background: #0f3460;
+      padding: 10px 12px;
+      margin: 8px 0;
+      border-left: 3px solid #ff8800;
+      border-radius: 3px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .game-name {
+      flex: 1;
+    }
+
+    .game-appid {
+      color: #888;
+      font-size: 0.85em;
+      margin-left: 10px;
+    }
+
+    .security-detail {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #0f3460;
+    }
+
+    .security-detail:last-child {
+      border-bottom: none;
+    }
+
+    .detail-label {
+      color: #888;
+    }
+
+    .detail-value {
+      font-weight: bold;
+      color: #00d4ff;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      display: none;
+    }
+
+    .loading.active {
+      display: block;
+    }
+
+    .spinner {
+      border: 4px solid #1a2a4e;
+      border-top: 4px solid #00d4ff;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .error {
+      background: #ff4444;
+      color: white;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .error.active {
+      display: block;
+    }
+
+    .no-data {
+      text-align: center;
+      padding: 40px;
+      color: #888;
+    }
+
+    .suspicion-meter {
+      display: flex;
+      gap: 5px;
+      margin-top: 10px;
+    }
+
+    .meter-segment {
+      flex: 1;
+      height: 20px;
+      background: #1a2a4e;
+      border-radius: 3px;
+      border: 1px solid #00d4ff;
+    }
+
+    .meter-segment.filled {
+      background: linear-gradient(90deg, #00dd88, #ffbb00, #ff8800, #ff4444);
+    }
+
+    .factor-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #0f3460;
+    }
+
+    .factor-item:last-child {
+      border-bottom: none;
+    }
+
+    .factor-name {
+      color: #00d4ff;
+    }
+
+    .factor-weight {
+      color: #ff8800;
+      font-weight: bold;
+    }
+
+    .match-item {
+      background: #0f3460;
+      padding: 12px;
+      margin: 8px 0;
+      border-left: 4px solid #ff8800;
+      border-radius: 3px;
+    }
+
+    .match-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .match-date {
+      color: #00d4ff;
+      font-weight: bold;
+    }
+
+    .match-map {
+      color: #888;
+      font-size: 0.9em;
+    }
+
+    .match-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+      gap: 8px;
+      font-size: 0.9em;
+    }
+
+    .match-stat {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .match-stat-label {
+      color: #888;
+    }
+
+    .match-stat-value {
+      color: #00d4ff;
+      font-weight: bold;
+    }
+
+    .suspicious-indicator {
+      display: inline-block;
+      background: #ff4444;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 0.8em;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🎮 CS2 Advanced Info Grabber</h1>
+      <p>Comprehensive player analysis and cheat detection</p>
+    </header>
+
+    <div class="search-box">
+      <input type="text" id="steamInput" placeholder="Enter Steam ID or profile URL">
+      <button onclick="searchPlayer()">Search</button>
+    </div>
+
+    <div class="error" id="error"></div>
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p>Analyzing player profile...</p>
+    </div>
+
+    <div class="player-card" id="playerCard">
+      <div class="player-header">
+        <img id="avatar" class="player-avatar" alt="Player Avatar">
+        <div class="player-info">
+          <div class="player-name" id="playerName"></div>
+          <div class="player-id" id="steamId"></div>
+          <div class="risk-indicator" id="riskIndicator"></div>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-button active" onclick="switchTab('overview')">Overview</button>
+        <button class="tab-button" onclick="switchTab('security')">Security</button>
+        <button class="tab-button" onclick="switchTab('analysis')">Analysis</button>
+        <button class="tab-button" onclick="switchTab('demos')">Demos</button>
+        <button class="tab-button" onclick="switchTab('recommendations')">Recommendations</button>
+      </div>
+
+      <!-- Overview Tab -->
+      <div id="overview" class="tab-content active">
+        <div class="stats-grid">
+          <div class="stat-box">
+            <div class="stat-label">Account Age</div>
+            <div class="stat-value" id="accountAge"></div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">VAC Bans</div>
+            <div class="stat-value" id="vacBans"></div>
+            <div class="stat-status" id="vacStatus"></div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Game Bans</div>
+            <div class="stat-value" id="gameBans"></div>
+            <div class="stat-status" id="gameBansStatus"></div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-label">Community Ban</div>
+            <div class="stat-value" id="communityBan"></div>
+            <div class="stat-status" id="communityBanStatus"></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Risk Score</div>
+          <div class="risk-score">
+            <div class="risk-score-bar" id="riskScoreBar"></div>
+          </div>
+        </div>
+
+        <div class="section" id="flagsContainer" style="display: none;">
+          <div class="section-title">⚠️ Flags</div>
+          <div id="flagsList"></div>
+        </div>
+
+        <div class="section" id="bannedGamesContainer" style="display: none;">
+          <div class="section-title">🎮 Banned Games</div>
+          <div id="bannedGamesList"></div>
+        </div>
+      </div>
+
+      <!-- Security Tab -->
+      <div id="security" class="tab-content">
+        <div class="section">
+          <div class="section-title">Account Security Score: <span id="securityScore"></span>/100</div>
+          <div id="securityDetails"></div>
+        </div>
+
+        <div class="section" id="securityIssuesContainer" style="display: none;">
+          <div class="section-title">🔴 Security Issues</div>
+          <div id="securityIssues"></div>
+        </div>
+      </div>
+
+      <!-- Analysis Tab -->
+      <div id="analysis" class="tab-content">
+        <div class="section">
+          <div class="section-title">Suspicion Level</div>
+          <div style="margin-bottom: 15px;">
+            <div style="font-size: 1.5em; color: #00d4ff; margin-bottom: 10px;">
+              <span id="suspicionLevel"></span> (<span id="suspicionScore"></span>/100)
+            </div>
+            <div class="suspicion-meter" id="suspicionMeter"></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Risk Factors</div>
+          <div id="riskFactors"></div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Play Style</div>
+          <div id="playStyle"></div>
+        </div>
+      </div>
+
+      <!-- Demos Tab -->
+      <div id="demos" class="tab-content">
+        <div class="section" id="demoStatsContainer" style="display: none;">
+          <div class="section-title">📊 Demo Statistics</div>
+          <div class="stats-grid">
+            <div class="stat-box">
+              <div class="stat-label">Total Matches</div>
+              <div class="stat-value" id="totalMatches">0</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Avg K/D</div>
+              <div class="stat-value" id="avgKD">0</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Avg HS%</div>
+              <div class="stat-value" id="avgHS">0%</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Win Rate</div>
+              <div class="stat-value" id="winRate">0%</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Consistency</div>
+              <div class="stat-value" id="consistency">0</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">K/D Trend</div>
+              <div class="stat-value" id="kdTrend">-</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section" id="suspiciousMatchesContainer" style="display: none;">
+          <div class="section-title">⚠️ Suspicious Matches</div>
+          <div id="suspiciousMatches"></div>
+        </div>
+
+        <div class="section" id="recentDemosContainer" style="display: none;">
+          <div class="section-title">🎮 Recent Demos</div>
+          <div id="recentDemosList"></div>
+        </div>
+
+        <div class="no-data" id="noDemosData" style="padding: 20px; text-align: center; color: #888;">
+          No demo data available. Make sure you have a FaceIt API key configured.
+        </div>
+      </div>
+
+      <!-- Recommendations Tab -->
+      <div id="recommendations" class="tab-content">
+        <div class="section">
+          <div class="section-title">Recommendations</div>
+          <div id="recommendationsList"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="no-data" id="noData">
+      Enter a Steam ID or profile URL to get started
+    </div>
+  </div>
+
+  <script>
+    function switchTab(tabName) {
+      // Hide all tabs
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.remove('active');
+      });
+
+      // Show selected tab
+      document.getElementById(tabName).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    async function searchPlayer() {
+      const input = document.getElementById('steamInput').value.trim();
+      if (!input) return;
+
+      showLoading(true);
+      hideError();
+
+      try {
+        // Determine API URL based on environment
+        const apiUrl = window.location.hostname === 'localhost' 
+          ? '/api/search' 
+          : 'https://cs2-info-grabber.vercel.app/api/search';
+
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ steamId: input })
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to fetch player data');
+        }
+
+        const data = await response.json();
+        displayPlayer(data);
+      } catch (error) {
+        showError(error.message);
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    function displayPlayer(data) {
+      document.getElementById('playerName').textContent = data.personaName;
+      document.getElementById('steamId').textContent = `Steam ID: ${data.steamId}`;
+      document.getElementById('avatar').src = data.avatar;
+      document.getElementById('accountAge').textContent = `${data.accountAge} days`;
+      document.getElementById('vacBans').textContent = data.vacBans;
+      document.getElementById('gameBans').textContent = data.gameBans;
+      document.getElementById('communityBan').textContent = data.communityBan ? 'Yes' : 'No';
+
+      // Status indicators
+      document.getElementById('vacStatus').textContent = data.vacBans > 0 ? 'BANNED' : 'CLEAN';
+      document.getElementById('vacStatus').className = `stat-status ${data.vacBans > 0 ? 'status-banned' : 'status-clean'}`;
+      
+      document.getElementById('gameBansStatus').textContent = data.gameBans > 0 ? 'BANNED' : 'CLEAN';
+      document.getElementById('gameBansStatus').className = `stat-status ${data.gameBans > 0 ? 'status-banned' : 'status-clean'}`;
+      
+      document.getElementById('communityBanStatus').textContent = data.communityBan ? 'BANNED' : 'CLEAN';
+      document.getElementById('communityBanStatus').className = `stat-status ${data.communityBan ? 'status-banned' : 'status-clean'}`;
+
+      // Risk indicator
+      const riskIndicator = document.getElementById('riskIndicator');
+      riskIndicator.textContent = data.cheatRisk;
+      riskIndicator.className = `risk-indicator risk-${data.cheatRisk.toLowerCase().replace(' ', '-')}`;
+
+      // Risk score bar
+      const riskScoreBar = document.getElementById('riskScoreBar');
+      riskScoreBar.style.width = data.riskScore + '%';
+      riskScoreBar.textContent = data.riskScore;
+
+      // Flags
+      const flagsContainer = document.getElementById('flagsContainer');
+      const flagsList = document.getElementById('flagsList');
+      if (data.flags.length > 0) {
+        flagsList.innerHTML = data.flags.map(flag => `<div class="flag-item">${flag}</div>`).join('');
+        flagsContainer.style.display = 'block';
+      } else {
+        flagsContainer.style.display = 'none';
+      }
+
+      // Banned games
+      const bannedGamesContainer = document.getElementById('bannedGamesContainer');
+      const bannedGamesList = document.getElementById('bannedGamesList');
+      if (data.bannedGames && data.bannedGames.length > 0) {
+        bannedGamesList.innerHTML = data.bannedGames.map(game => 
+          `<div class="game-item"><span class="game-name">${game.name}</span><span class="game-appid">ID: ${game.appid}</span></div>`
+        ).join('');
+        bannedGamesContainer.style.display = 'block';
+      } else {
+        bannedGamesContainer.style.display = 'none';
+      }
+
+      // Security tab
+      if (data.accountSecurity) {
+        document.getElementById('securityScore').textContent = data.accountSecurity.score;
+        
+        const details = data.accountSecurity.details;
+        let detailsHtml = '';
+        for (const [key, value] of Object.entries(details)) {
+          const label = key.replace(/([A-Z])/g, ' $1').trim();
+          const statusClass = value === 'CLEAN' ? 'status-clean' : value === 'BANNED' ? 'status-banned' : value === 'HIDDEN' ? 'status-hidden' : 'status-warning';
+          detailsHtml += `
+            <div class="security-detail">
+              <span class="detail-label">${label}</span>
+              <span class="detail-value" style="padding: 2px 8px; border-radius: 3px; background: ${getStatusColor(value)}; color: white; font-size: 0.85em;">${value}</span>
+            </div>
+          `;
+        }
+        document.getElementById('securityDetails').innerHTML = detailsHtml;
+
+        if (data.accountSecurity.issues.length > 0) {
+          document.getElementById('securityIssuesContainer').style.display = 'block';
+          document.getElementById('securityIssues').innerHTML = data.accountSecurity.issues
+            .map(issue => `<div class="flag-item">${issue}</div>`)
+            .join('');
+        }
+      }
+
+      // Analysis tab
+      if (data.suspicionLevel) {
+        document.getElementById('suspicionLevel').textContent = data.suspicionLevel.level;
+        document.getElementById('suspicionScore').textContent = data.suspicionLevel.score;
+        
+        // Suspicion meter
+        const meterSegments = 10;
+        const filledSegments = Math.ceil((data.suspicionLevel.score / 100) * meterSegments);
+        let meterHtml = '';
+        for (let i = 0; i < meterSegments; i++) {
+          meterHtml += `<div class="meter-segment ${i < filledSegments ? 'filled' : ''}"></div>`;
+        }
+        document.getElementById('suspicionMeter').innerHTML = meterHtml;
+
+        // Risk factors
+        if (data.suspicionLevel.factors.length > 0) {
+          let factorsHtml = '';
+          data.suspicionLevel.factors.forEach(factor => {
+            factorsHtml += `
+              <div class="factor-item">
+                <span class="factor-name">${factor.factor}</span>
+                <span class="factor-weight">+${factor.weight}</span>
+              </div>
+            `;
+          });
+          document.getElementById('riskFactors').innerHTML = factorsHtml;
+        }
+      }
+
+      // Play style
+      if (data.playStyle) {
+        let styleHtml = `
+          <div class="security-detail">
+            <span class="detail-label">Activity Level</span>
+            <span class="detail-value">${data.playStyle.activity}</span>
+          </div>
+        `;
+        if (data.playStyle.details.lastSeen) {
+          styleHtml += `
+            <div class="security-detail">
+              <span class="detail-label">Last Seen</span>
+              <span class="detail-value">${data.playStyle.details.lastSeen}</span>
+            </div>
+          `;
+        }
+        document.getElementById('playStyle').innerHTML = styleHtml;
+      }
+
+      // Recommendations
+      if (data.recommendations && data.recommendations.length > 0) {
+        document.getElementById('recommendationsList').innerHTML = data.recommendations
+          .map(rec => `
+            <div class="recommendation ${rec.severity}">
+              <div>
+                <span class="rec-type ${rec.type}">${rec.type}</span>
+                <div style="margin-top: 5px; color: #e0e0e0;">${rec.message}</div>
+              </div>
+            </div>
+          `)
+          .join('');
+      }
+
+      // Demos tab
+      if (data.demoAnalysis && data.demoAnalysis.totalMatches > 0) {
+        document.getElementById('demoStatsContainer').style.display = 'block';
+        document.getElementById('totalMatches').textContent = data.demoAnalysis.totalMatches;
+        document.getElementById('avgKD').textContent = data.demoAnalysis.avgKD;
+        document.getElementById('avgHS').textContent = data.demoAnalysis.avgHS + '%';
+        document.getElementById('winRate').textContent = data.demoAnalysis.winRate + '%';
+        document.getElementById('consistency').textContent = data.demoAnalysis.consistencyScore.toFixed(1);
+        
+        if (data.demoAnalysis.trends && data.demoAnalysis.trends.kdTrend) {
+          const trendColor = data.demoAnalysis.trends.kdTrend === 'IMPROVING' ? '#00dd88' : 
+                            data.demoAnalysis.trends.kdTrend === 'DECLINING' ? '#ff4444' : '#00d4ff';
+          document.getElementById('kdTrend').textContent = data.demoAnalysis.trends.kdTrend;
+          document.getElementById('kdTrend').style.color = trendColor;
+        }
+
+        // Suspicious matches
+        if (data.demoAnalysis.suspiciousMatches && data.demoAnalysis.suspiciousMatches.length > 0) {
+          document.getElementById('suspiciousMatchesContainer').style.display = 'block';
+          document.getElementById('suspiciousMatches').innerHTML = data.demoAnalysis.suspiciousMatches
+            .map(match => `
+              <div class="match-item">
+                <div class="match-header">
+                  <span class="match-date">${match.date}</span>
+                  <span class="match-map">${match.map}</span>
+                </div>
+                <div class="match-stats">
+                  <div class="match-stat">
+                    <span class="match-stat-label">K/D:</span>
+                    <span class="match-stat-value">${match.kd}</span>
+                  </div>
+                  <div class="match-stat">
+                    <span class="match-stat-label">HS%:</span>
+                    <span class="match-stat-value">${match.hs}</span>
+                  </div>
+                  <div class="match-stat">
+                    <span class="match-stat-label">Kills:</span>
+                    <span class="match-stat-value">${match.kills}</span>
+                  </div>
+                </div>
+                <div class="suspicious-indicator">⚠️ ${match.reason}</div>
+              </div>
+            `)
+            .join('');
+        }
+
+        // Recent demos
+        const allDemos = [...(data.demos?.faceit || []), ...(data.demos?.esea || [])];
+        if (allDemos.length > 0) {
+          document.getElementById('recentDemosContainer').style.display = 'block';
+          document.getElementById('recentDemosList').innerHTML = allDemos.slice(0, 10)
+            .map(demo => `
+              <div class="match-item">
+                <div class="match-header">
+                  <span class="match-date">${demo.date}</span>
+                  <span class="match-map">${demo.platform} - ${demo.map}</span>
+                </div>
+                <div class="match-stats">
+                  <div class="match-stat">
+                    <span class="match-stat-label">K/D:</span>
+                    <span class="match-stat-value">${demo.kd}</span>
+                  </div>
+                  <div class="match-stat">
+                    <span class="match-stat-label">HS%:</span>
+                    <span class="match-stat-value">${demo.hs}</span>
+                  </div>
+                  <div class="match-stat">
+                    <span class="match-stat-label">Result:</span>
+                    <span class="match-stat-value">${demo.result}</span>
+                  </div>
+                </div>
+              </div>
+            `)
+            .join('');
+          document.getElementById('noDemosData').style.display = 'none';
+        }
+      } else {
+        document.getElementById('noDemosData').style.display = 'block';
+      }
+
+      document.getElementById('noData').style.display = 'none';
+      document.getElementById('playerCard').classList.add('active');
+    }
+
+    function getStatusColor(status) {
+      const colors = {
+        'CLEAN': '#00dd88',
+        'BANNED': '#ff4444',
+        'HIDDEN': '#888',
+        'WARNING': '#ffbb00',
+        'GOOD': '#00dd88',
+        'RECENT': '#ff4444',
+        'WITHIN_YEAR': '#ffbb00',
+        'OLD': '#00d4ff'
+      };
+      return colors[status] || '#00d4ff';
+    }
+
+    function showLoading(show) {
+      document.getElementById('loading').classList.toggle('active', show);
+    }
+
+    function showError(message) {
+      const error = document.getElementById('error');
+      error.textContent = message;
+      error.classList.add('active');
+    }
+
+    function hideError() {
+      document.getElementById('error').classList.remove('active');
+    }
+
+    document.getElementById('steamInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') searchPlayer();
+    });
+  </script>
+</body>
+</html>

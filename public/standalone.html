@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CS2 Info Grabber</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+      color: #e0e0e0;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+      padding: 20px 0;
+      border-bottom: 2px solid #00d4ff;
+    }
+
+    h1 {
+      font-size: 2.5em;
+      color: #00d4ff;
+      margin-bottom: 10px;
+      text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+    }
+
+    .search-box {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+      justify-content: center;
+    }
+
+    input {
+      padding: 12px 20px;
+      border: 2px solid #00d4ff;
+      background: #0f3460;
+      color: #e0e0e0;
+      border-radius: 5px;
+      font-size: 1em;
+      width: 100%;
+      max-width: 500px;
+    }
+
+    button {
+      padding: 12px 30px;
+      background: #00d4ff;
+      color: #1a1a2e;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1em;
+      transition: all 0.3s;
+    }
+
+    button:hover {
+      background: #00a8cc;
+      transform: translateY(-2px);
+    }
+
+    .card {
+      background: #0f3460;
+      border: 2px solid #00d4ff;
+      border-radius: 10px;
+      padding: 30px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .card.active {
+      display: block;
+    }
+
+    .player-header {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 30px;
+      align-items: center;
+    }
+
+    .avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 10px;
+      border: 2px solid #00d4ff;
+    }
+
+    .player-info h2 {
+      color: #00d4ff;
+      margin-bottom: 10px;
+    }
+
+    .stat {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid #1a2a4e;
+    }
+
+    .stat-label {
+      color: #888;
+    }
+
+    .stat-value {
+      color: #00d4ff;
+      font-weight: bold;
+    }
+
+    .risk-high {
+      color: #ff4444;
+    }
+
+    .risk-medium {
+      color: #ffbb00;
+    }
+
+    .risk-low {
+      color: #00dd88;
+    }
+
+    .error {
+      background: #ff4444;
+      color: white;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      display: none;
+    }
+
+    .error.active {
+      display: block;
+    }
+
+    .no-data {
+      text-align: center;
+      padding: 40px;
+      color: #888;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      display: none;
+    }
+
+    .spinner {
+      border: 4px solid #1a2a4e;
+      border-top: 4px solid #00d4ff;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🎮 CS2 Info Grabber</h1>
+      <p>Enter a Steam ID to check player info</p>
+    </header>
+
+    <div class="search-box">
+      <input type="text" id="steamInput" placeholder="Enter Steam ID (e.g., 76561198123456789)">
+      <button onclick="searchPlayer()">Search</button>
+    </div>
+
+    <div class="error" id="error"></div>
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p>Fetching player data...</p>
+    </div>
+
+    <div class="card" id="playerCard">
+      <div class="player-header">
+        <img id="avatar" class="avatar" alt="Avatar">
+        <div class="player-info">
+          <h2 id="playerName"></h2>
+          <p id="steamId" style="color: #888;"></p>
+        </div>
+      </div>
+
+      <div class="stat">
+        <span class="stat-label">Account Age</span>
+        <span class="stat-value" id="accountAge"></span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">VAC Bans</span>
+        <span class="stat-value" id="vacBans"></span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Game Bans</span>
+        <span class="stat-value" id="gameBans"></span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Community Ban</span>
+        <span class="stat-value" id="communityBan"></span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Risk Level</span>
+        <span class="stat-value" id="riskLevel"></span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Risk Score</span>
+        <span class="stat-value" id="riskScore"></span>
+      </div>
+    </div>
+
+    <div class="no-data" id="noData">
+      Enter a Steam ID to get started
+    </div>
+  </div>
+
+  <script>
+    const STEAM_API_KEY = '4E7D37B3F41A1140133A63761C5B71C9';
+
+    async function searchPlayer() {
+      const steamId = document.getElementById('steamInput').value.trim();
+      if (!steamId) return;
+
+      showLoading(true);
+      hideError();
+
+      try {
+        const data = await fetchPlayerInfo(steamId);
+        displayPlayer(data);
+      } catch (error) {
+        showError(error.message);
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    async function fetchPlayerInfo(steamId) {
+      // Extract Steam ID from URL if needed
+      const match = steamId.match(/\/profiles\/(\d+)/);
+      const id = match ? match[1] : steamId;
+
+      const res = await fetch(
+        `https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=${STEAM_API_KEY}&steamids=${id}`
+      );
+
+      if (!res.ok) throw new Error('Failed to fetch player data');
+
+      const data = await res.json();
+      if (!data.response.players.length) throw new Error('Player not found');
+
+      const player = data.response.players[0];
+
+      // Fetch ban data
+      const banRes = await fetch(
+        `https://api.steampowered.com/ISteamUser/GetPlayerBans/v1/?key=${STEAM_API_KEY}&steamids=${id}`
+      );
+
+      const banData = await banRes.json();
+      const bans = banData.players[0];
+
+      const accountAge = Math.floor((Date.now() - player.timecreated * 1000) / (1000 * 60 * 60 * 24));
+
+      // Calculate risk score
+      let riskScore = 0;
+      if (bans.NumberOfVACBans > 0) riskScore += 40;
+      if (bans.NumberOfGameBans > 0) riskScore += 35;
+      if (bans.CommunityBanned) riskScore += 20;
+      if (accountAge < 30) riskScore += 10;
+
+      let riskLevel = 'LOW';
+      if (riskScore >= 70) riskLevel = 'VERY HIGH';
+      else if (riskScore >= 50) riskLevel = 'HIGH';
+      else if (riskScore >= 30) riskLevel = 'MEDIUM';
+
+      return {
+        personaName: player.personaname,
+        steamId: player.steamid,
+        avatar: player.avatarfull,
+        accountAge,
+        vacBans: bans.NumberOfVACBans,
+        gameBans: bans.NumberOfGameBans,
+        communityBan: bans.CommunityBanned,
+        riskScore,
+        riskLevel
+      };
+    }
+
+    function displayPlayer(data) {
+      document.getElementById('playerName').textContent = data.personaName;
+      document.getElementById('steamId').textContent = `Steam ID: ${data.steamId}`;
+      document.getElementById('avatar').src = data.avatar;
+      document.getElementById('accountAge').textContent = `${data.accountAge} days`;
+      document.getElementById('vacBans').textContent = data.vacBans;
+      document.getElementById('gameBans').textContent = data.gameBans;
+      document.getElementById('communityBan').textContent = data.communityBan ? 'Yes' : 'No';
+      
+      const riskLevel = document.getElementById('riskLevel');
+      riskLevel.textContent = data.riskLevel;
+      riskLevel.className = `stat-value risk-${data.riskLevel.toLowerCase().replace(' ', '-')}`;
+      
+      document.getElementById('riskScore').textContent = `${data.riskScore}/100`;
+
+      document.getElementById('noData').style.display = 'none';
+      document.getElementById('playerCard').classList.add('active');
+    }
+
+    function showLoading(show) {
+      document.getElementById('loading').style.display = show ? 'block' : 'none';
+    }
+
+    function showError(msg) {
+      const error = document.getElementById('error');
+      error.textContent = msg;
+      error.classList.add('active');
+    }
+
+    function hideError() {
+      document.getElementById('error').classList.remove('active');
+    }
+
+    document.getElementById('steamInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') searchPlayer();
+    });
+  </script>
+</body>
+</html>
